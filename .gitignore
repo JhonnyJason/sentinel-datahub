@@ -1,0 +1,5 @@
+node_modules
+.build-config
+testing/certificates/*
+testing/testing-wd
+testing/state
