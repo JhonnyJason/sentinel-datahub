@@ -1,0 +1,10 @@
+[Unit]
+Description=Path Unit to restart tested service on file-change :-)
+
+[Path]
+PathChanged=/home/lenny/thingies/sentinel-datahub/output/service.js
+Unit=restart-tested.service
+
+
+[Install]
+WantedBy=multi-user.target

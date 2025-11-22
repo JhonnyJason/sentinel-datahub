@@ -1,5 +1,6 @@
 node_modules
 .build-config
-testing/certificates/*
+testing/certificates
+testing/.config.json
 testing/testing-wd
 testing/state

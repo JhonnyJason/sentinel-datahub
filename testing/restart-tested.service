@@ -1,0 +1,9 @@
+[Unit]
+Description=Restarting the tested service :-)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl try-restart tested.service
+
+[Install]
+WantedBy=multi-user.target
