@@ -1,14 +1,14 @@
-# root-template
+# Sentinel Datahub
 
-This content is used as staticBase for the root of many thingies.
+This is a service is the Data-aggregator of the Sentinel Platform.
+It functions as intermediary betwen the Sentinel Dashboard and the 3rd Party Data APIs.
 
-It includes:
+For this we implement
+- Client-Facing Data API
+- Activate and deactivate Access (Token-Based)
 
-- .vscode/settings.json to not care about various files - e.g. build output
-- .gitignore to ignore node_modules and .build-config
-- LICENSE file
 
 ---
 
 # License
-[Unlicense JhonnyJason style](https://hackmd.io/nCpLO3gxRlSmKVG3Zxy2hA?view)
+[CC0](https://creativecommons.org/publicdomain/zero/1.0/)
