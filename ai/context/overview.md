@@ -33,8 +33,10 @@ allmodules/         - Module registry
 
 **MarketStack** (`marketstackmodule`):
 - URL: `https://api.marketstack.com/v2`
-- Functions: `getAllSymbols()`, `getAllCurrencies()`, `getEndOfDayData()`
-- Current use: Batch store symbols/currencies to JSON files
+- Status: **Redesigning** — see `sources/source/marketstackmodule/README.md`
+- Architecture: Two models due to rate limits
+  - Stocks: Pull model (on-demand), DataModule calls when needed
+  - Commodities: Push model (heartbeat), continuous background fetching (1 req/min), notifies DataModule
 
 **Tradovate** (`tradovatemodule`):
 - URL: `https://live.tradovateapi.com/v1`

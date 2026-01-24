@@ -56,17 +56,33 @@ Storage: { "<symbol>": DataSet, ... }
 
 **Gap-fill rule:** Missing days → `[lastClose, lastClose, lastClose]`
 
-**MarketStack endpoints to use:**
-- Stocks: `GET /eod?symbols=X&date_from=...&date_to=...`
-- Commodities: `GET /commoditieshistory?commodity_name=X&date_from=...&date_to=...`
+**See:** `sources/source/marketstackmodule/README.md` for full architecture and API reference
 
-**See:** `sources/source/marketstackmodule/README.md` for full API reference
+### MarketStack Module Architecture (Planned)
+
+**Two retrieval models:**
+- **Stocks: Pull model** — DataModule calls on-demand, fast
+- **Commodities: Push model** — Heartbeat fetches continuously (1 req/min limit), notifies DataModule
+
+**Stock exports:**
+```
+getStockAllHistory(ticker) → Result
+getStockOlderHistory(ticker, olderThan) → Result
+getStockNewerHistory(ticker, newerThan) → Result
+
+Result: { dataSet, reachedHistoryStart, reachedPlanLimit }
+```
+
+**Commodity exports:**
+```
+startCommodityHeartbeat(config)  # config: { commodities[], onData, onComplete }
+stopCommodityHeartbeat()
+```
 
 **Implementation tasks:**
-- [ ] Implement `getStockEOD(symbols, dateFrom, dateTo)` with pagination
-- [ ] Implement `getCommodityHistory(name, dateFrom, dateTo)` with rate limiting (1/min)
-- [ ] Create normalizer functions: source response → DataSet with gap-filling
-- [ ] Handle the different response structures (stocks = array, commodities = nested)
+- [ ] Stock functions: pagination, normalize, gap-fill, detect limits
+- [ ] Commodity heartbeat: init, state management, round-robin, callbacks
+- [ ] Shared: normalizeStockResponse, normalizeCommodityResponse, gapFill
 
 ### Priority 2: Data Management
 - How do we store, cache, and serve retrieved data?
