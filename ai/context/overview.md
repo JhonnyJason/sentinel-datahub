@@ -63,6 +63,52 @@ The service is an **experimental shell** for API exploration:
 3. Client-Facing Data API
 4. Token-Based Access Control
 
+## Data Layer Design Decisions
+
+### Uniform Data Format
+All historical price data is normalized to an efficient array-based structure:
+
+```
+DataPoint: [high, low, close]  // array of 3 floats
+
+DataSet: {
+  meta: { startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", interval: "1d" },
+  data: [DataPoint, DataPoint, ...]  // index 0 = startDate
+}
+
+Storage: { "<symbol>": DataSet, ... }
+```
+
+**Design rationale:**
+- Array format minimizes memory and JSON size (no repeated key strings)
+- Symbol stored once per DataSet, not per DataPoint
+- Date computed from index: `date = startDate + (index * interval)`
+- Contiguous data guaranteed (no gaps)
+
+**Symbol convention:** `{asset}/{quote_currency}` (lowercase quote currency)
+
+### Gap-Fill Rule
+If source data has missing days, fill with: `[lastClose, lastClose, lastClose]`
+
+This ensures every index has a valid DataPoint, simplifying consumer code.
+
+### Data Sources
+
+| Asset Type | Source | Status |
+|------------|--------|--------|
+| Stocks | MarketStack `/eod` | Planned |
+| Commodities | MarketStack `/commoditieshistory` | Planned |
+| Forex | Tradovate or histdata.com | Future |
+
+### Normalization Rules
+- **Stocks (OHLC):** Extract `high`, `low`, `close`
+- **Commodities (single price):** Use price for all three: `[price, price, price]`
+
+### API Constraints
+- MarketStack commodities: **1 request per minute** rate limit
+- MarketStack EOD: Max 1000 results per page, use pagination
+- Commodities: Recommend 1 year per request for daily data
+
 ## Directory Structure
 ```
 sources/            - Source code (CoffeeScript modules)

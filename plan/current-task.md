@@ -1,10 +1,12 @@
-# Task 0
-Establish some overview, orientation and then a plan in the Development process.
+# Task 1
+Implement Data Retrieval EOD
 
 ## Details
-We are new on working on this project together, as such you need to discover the project and store the related information in your contexts.
-Aside of that we will plan the next Steps of our implementation such that we may start next with an implementation Task ;-)
+Everything depends on the data retrieval - so we implement this first.
+The MarketStack API seems the best way to go as they are affordable and their API is of good quality. Some generated API code is available in ./sources/source/marketstackmodule/marketstack-api/ from there we should extract the exact pieces which we need and implement a first straight data-retrieval use-case.
 
 ## Sub-Tasks
-- [x] get to know the project
-- [x] write down the missing features to be implemented for the next deployment
+- [ ] Summarize the marketstack API
+- [ ] Implement a convenience Wrapper in the marketstackmodule
+- [ ] Implement top-level control function in the datamodule
+- [ ] Test and fix
