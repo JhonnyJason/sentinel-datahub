@@ -18,6 +18,11 @@
 ### Module Registry
 - `sources/source/allmodules/allmodules.coffee` - Exports all modules
 
+### Storage Layer
+- `sources/source/storagemodule/storagemodule.coffee` - Public API (TODO: wire up)
+- `sources/source/statecachemodule/statecachemodule.coffee` - LRU cache layer
+- `sources/source/statesavermodule/statesavermodule.coffee` - File I/O with backup
+
 ## Quick Reference
 ### Add a new module
 There is a convenience script `np addmodule <module-name>`
@@ -39,6 +44,27 @@ However I should tell my partner and let him do this.
 3. **Bugsnitch disabled**: In `bugsnitch.coffee:27` there's an early `return` that skips initialization
 
 4. **No HTTP server**: The service currently has no way to receive requests
+
+5. **Storage layer not wired up**: statecachemodule/statesavermodule exist but aren't integrated into standard init pattern
+
+## Storage Layer Status
+
+**Architecture:**
+```
+storagemodule (public API) → statecachemodule (LRU cache) → statesavermodule (file I/O)
+```
+
+**Issues to fix:**
+- [ ] statecachemodule:4 - log label says "statesavermodule" (typo)
+- [ ] statecachemodule - missing `toJson` helper function (will crash)
+- [ ] storagemodule - empty, needs to wire up statecachemodule
+- [ ] Need `list()` function to enumerate stored states
+
+**Initialization mismatch:**
+- statecachemodule.initialize(options) expects `{basePath, maxCacheSize, defaultState}`
+- Standard pattern passes `cfg` module
+- configmodule already has `persistentStateOptions` (lines 50-53)
+- storagemodule should bridge: `statecache.initialize(cfg.persistentStateOptions)`
 
 ## Next Implementation Focus
 
