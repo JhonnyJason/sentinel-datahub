@@ -20,8 +20,13 @@ datamodule/         - Central data layer: freshness management, storage
 marketstackmodule/  - MarketStack API integration (stock market data)
 dateutilsmodule/    - Shared date utilities (nextDay, prevDay, daysBetween, generateDateRange)
 tradovatemodule/    - Tradovate API integration (futures trading)
+storagemodule/      - Persistent state with LRU cache
 bugsnitch/          - Error reporting (Unix socket to bugsnitch service)
-scimodule/          - (minimal - purpose unclear)
+scimodule/          - HTTP API server (routes defined in accesssci.coffee, datasci.coffee)
+scicore/            - SCI framework core (submodule)
+accessmodule/       - Token-based access control with TTL
+authmodule/         - Signature-based authentication (nonce replay protection)
+earlyblockermodule/ - IP/origin blocking for abuse prevention
 debugmodule/        - Debug utilities setup
 allmodules/         - Module registry
 ```
@@ -50,22 +55,31 @@ Read from `.config.json` in working directory:
 - `secret`, `cid`, `name`, `password` - Tradovate credentials
 - `mrktStackSecret` - MarketStack API key
 
-## Current State (v0.0.1)
-The service is an **experimental shell** for API exploration:
-- Can authenticate with MarketStack and dump symbols/currencies
+## Current State (v0.1.0)
+The service has a **functional client-facing API**:
+- HTTP server via scicore framework
+- Token-based access control (authCode with TTL)
+- Signature-authenticated admin endpoints (grantAccess, revokeAccess)
+- Data retrieval endpoint with optional time slicing (getData)
+- Stock data: full pipeline working (fetch → cache → freshness → serve)
 - Tradovate integration scaffolded but disabled
-- **No client-facing API yet** (no HTTP server)
-- **No token-based access control yet**
+- Commodities/Forex: stubs in place, data retrieval TODO
 
 ## Implementation Roadmap
 
-### Current Focus: Data Layer
-1. **Data Retrieval** — Establish how we fetch data from external APIs
-2. **Data Management** — Storage, caching, freshness strategies
+### Completed
+1. **Data Retrieval** — MarketStack stock integration with pagination, gap-fill
+2. **Data Management** — Storage layer with LRU cache, freshness strategies
+3. **Client-Facing API** — HTTP server with token-based access control
 
-### Later: Client Interface
-3. Client-Facing Data API
-4. Token-Based Access Control
+### Remaining for v0.1.0
+- [ ] End-to-end testing of the full flow
+- [ ] Deployment configuration
+
+### Future
+- Commodity heartbeat (push model, 1 req/min rate limit)
+- Forex data integration
+- Preprocessed data endpoints
 
 ## Data Layer Design Decisions
 
@@ -131,9 +145,44 @@ This ensures every index has a valid DataPoint, simplifying consumer code.
 
 | Asset Type | Source | Status |
 |------------|--------|--------|
-| Stocks | MarketStack `/eod` | Planned |
-| Commodities | MarketStack `/commoditieshistory` | Planned |
-| Forex | Tradovate or histdata.com | Future |
+| Stocks | MarketStack `/eod` | **Working** |
+| Commodities | MarketStack `/commoditieshistory` | Stub ready |
+| Forex | Tradovate or histdata.com | Stub ready |
+
+## Client API
+
+### Authentication Architecture
+```
+Access Manager (external) ──signatureAuth──► grantAccess/revokeAccess
+                                                    │
+                                                    ▼
+Dashboard Client ──────────authCode────────► getData
+```
+
+- **Admin endpoints**: Signature-authenticated (Ed25519), nonce replay protection
+- **Data endpoints**: Simple authCode token with TTL
+
+### API Endpoints
+
+| Endpoint | Auth | Purpose |
+|----------|------|---------|
+| `grantAccess` | signature | Create/refresh access token with TTL |
+| `revokeAccess` | signature | Revoke an access token |
+| `getData` | authCode | Retrieve price data for a symbol |
+
+### getData Parameters
+```json
+{
+  "authCode": "hex32",
+  "dataKey": "AAPL",
+  "yearsBack": 2        // optional, omit for full history
+}
+```
+
+### Security Layers
+1. **earlyblockermodule** — Origin validation, IP blocking
+2. **authmodule** — Signature verification, timestamp/nonce validation
+3. **accessmodule** — Token validity check
 
 ### Normalization Rules
 - **Stocks (OHLC):** Extract `high`, `low`, `close`

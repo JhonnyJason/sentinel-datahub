@@ -11,10 +11,21 @@
 
 ### Business Logic
 - `sources/source/startupmodule/startupmodule.coffee` - Startup orchestration
-- `sources/source/datamodule/datamodule.coffee` - Central data layer (freshness, storage)
+- `sources/source/datamodule/datamodule.coffee` - Central data layer (freshness, storage, slicing)
 - `sources/source/marketstackmodule/marketstackmodule.coffee` - MarketStack API client
 - `sources/source/dateutilsmodule/dateutilsmodule.coffee` - Shared date utilities
 - `sources/source/tradovatemodule/tradovatemodule.coffee` - Tradovate API client (disabled)
+
+### Client API Layer
+- `sources/source/scimodule/scimodule.coffee` - Server setup, calls scicore
+- `sources/source/scimodule/accesssci.coffee` - Admin routes (grantAccess, revokeAccess)
+- `sources/source/scimodule/datasci.coffee` - Data routes (getData)
+- `sources/source/scicore/` - SCI framework (submodule)
+
+### Authentication & Access
+- `sources/source/authmodule/authmodule.coffee` - Signature auth, nonce tracking
+- `sources/source/accessmodule/accessmodule.coffee` - Token management with TTL
+- `sources/source/earlyblockermodule/earlyblockermodule.coffee` - Origin/IP blocking
 
 ### Module Registry
 - `sources/source/allmodules/allmodules.coffee` - Exports all modules
@@ -35,6 +46,10 @@ However I should tell my partner and let him do this.
 - `urlTrdvt`, `urlMrktStack` - API base URLs
 - `checkAccessMS`, `checkSymbolsMS` - Polling intervals
 - `persistentStateOptions` - State storage config
+- `accessManagerId` - Public key for admin signature auth
+- `legalOrigins` - Allowed request origins
+- `fallbackAuthCode` - Dev-mode access token (hardcoded)
+- `snitchSocket` - Bugsnitch Unix socket path
 
 ## Critical Conventions
 
@@ -49,13 +64,11 @@ All date arithmetic MUST use UTC midnight: `new Date(dateStr + "T00:00:00Z")`
 
 1. **Tradovate disabled**: In `tradovatemodule.coffee:31` there's an early `return` that skips initialization
 
-2. **Special mission mode**: Currently `startupmodule.serviceStartup()` runs `mrktStack.executeSpecialMission()` which is a one-shot data dump (not a persistent service)
+2. **Bugsnitch disabled**: In `bugsnitch.coffee:27` there's an early `return` that skips initialization
 
-3. **Bugsnitch disabled**: In `bugsnitch.coffee:27` there's an early `return` that skips initialization
+3. **Fallback authCode**: Hardcoded dev token in configmodule for testing without access manager
 
-4. **No HTTP server**: The service currently has no way to receive requests
-
-5. **Storage layer ready**: storagemodule wired up and integrated into standard init pattern
+4. **accessmodule TODO**: Comment about upgrading from per-token setTimeout to single heartbeat pruning (optimization for many tokens)
 
 ## Storage Layer Status
 
@@ -66,81 +79,51 @@ storagemodule (public API) → statecache (LRU cache) → statesaver (file I/O)
 
 All components now live in `sources/source/storagemodule/`. Wired up and ready to use.
 
-## Next Implementation Focus
+## Implementation Status
 
-### Priority 1: Data Retrieval (In Progress)
-**Decision made:** Uniform data format for all price data:
+### Completed ✓
+
+**Data Layer:**
+- [x] Uniform data format: `DataPoint: [high, low, close]`, `DataSet: { meta, data }`
+- [x] Gap-fill rule: Missing days → `[lastClose, lastClose, lastClose]`
+- [x] Stock retrieval: pagination, normalize, gap-fill, history completeness detection
+- [x] DataModule: freshness check, top-up, storage integration
+- [x] Storage layer: LRU cache + file persistence
+
+**Client API:**
+- [x] HTTP server via scicore framework
+- [x] Admin endpoints: `grantAccess`, `revokeAccess` (signature-authenticated)
+- [x] Data endpoint: `getData` with optional `yearsBack` slicing
+- [x] Token-based access control with TTL
+- [x] Origin validation and IP blocking
+
+### Remaining
+
+**For v0.1.0:**
+- [ ] End-to-end testing
+- [ ] Deployment configuration
+
+**Future:**
+- [ ] Commodity heartbeat (push model, 1 req/min)
+- [ ] Forex data integration
+- [ ] Preprocessed data endpoints
+
+## Key Architecture References
+
+**Data Format:**
 ```
-DataPoint: [high, low, close]  // array of 3 floats
-
-DataSet: {
-  meta: { startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", interval: "1d" },
-  data: [DataPoint, DataPoint, ...]  // index 0 = startDate
-}
-
-Storage: { "<symbol>": DataSet, ... }
-```
-
-**Gap-fill rule:** Missing days → `[lastClose, lastClose, lastClose]`
-
-**See:** `sources/source/marketstackmodule/README.md` for full architecture and API reference
-
-### MarketStack Module Architecture
-
-**Two retrieval models:**
-- **Stocks: Pull model** — DataModule calls on-demand, fast (IMPLEMENTED)
-- **Commodities: Push model** — Heartbeat fetches continuously (1 req/min limit), notifies DataModule (TODO)
-
-**Stock exports (implemented):**
-```
-getStockAllHistory(ticker) → DataSet | null
-getStockOlderHistory(ticker, olderThan) → DataSet | null
-getStockNewerHistory(ticker, newerThan) → DataSet | null
-
 DataSet: { meta: { startDate, endDate, interval, historyComplete }, data: [[h,l,c], ...] }
 ```
 
-**Commodity exports (TODO):**
+**API Flow:**
 ```
-startCommodityHeartbeat(config)  # config: { commodities[], onData, onComplete }
-stopCommodityHeartbeat()
-```
-
-**Implementation tasks:**
-- [x] Stock functions: pagination, normalize, gap-fill, detect limits
-- [ ] Commodity heartbeat: init, state management, round-robin, callbacks
-
-### Priority 2: DataModule Implementation (In Progress)
-
-**Architecture decided:**
-```
-Client Request → API Endpoint → DataModule → Response
-                                    │
-                                    ├─ Fresh? → return cached
-                                    └─ Stale/missing? → fetch → return
+Client Request → scimodule → authCheck → datamodule → response
+                                              │
+                                              ├─ Fresh? → return cached
+                                              └─ Stale? → fetch → store → slice → return
 ```
 
-**Key decisions:**
-- Stocks: Pull model (active freshness management)
-- Commodities: Push model (passive, return what heartbeat gathered)
-- Freshness threshold: Configurable, default 7 days
-- Stale → top-up with `getStockNewerHistory()`
-- Missing → full fetch with `getStockAllHistory()`
-
-**Implementation tasks:**
-- [x] `initialize(config)` - setup storage, configure threshold
-- [x] `getStockData(symbol)` - freshness check, fetch if needed, return
-- [x] `getCommodityData(name)` - return stored data (no fetch)
-- [x] Storage integration
-- [x] Freshness threshold configuration
-
-**See:** `sources/source/datamodule/README.md`
-
-### Later: Client-Facing API
-- HTTP/HTTPS server module
-- API routes for data queries
-- Token-based access control
-- Change startup from "special mission" to "listen for requests"
+**See:** `sources/source/marketstackmodule/README.md`, `sources/source/datamodule/README.md`
 
 ## MarketStack API Quick Reference
 
