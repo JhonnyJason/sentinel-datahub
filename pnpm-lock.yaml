@@ -20,6 +20,9 @@ importers:
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
+      secret-manager-crypto-utils:
+        specifier: ^0.3.1
+        version: 0.3.1
       thingy-allmodules-sync:
         specifier: ^0.2.0
         version: 0.2.0
@@ -29,6 +32,9 @@ importers:
       thingy-module-gen:
         specifier: ^0.1.6
         version: 0.1.6(@types/node@24.10.1)
+      thingy-schema-validate:
+        specifier: ^0.0.7
+        version: 0.0.7
       thingymodulecreate:
         specifier: ^0.1.8
         version: 0.1.8
@@ -80,6 +86,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@noble/ed25519@2.3.0':
+    resolution: {integrity: sha512-M7dvXL2B92/M7dw9+gzuydL8qn/jiqNHaoR3Q+cb1q1GHV7uwE17WCyFMG+Y+TZb5izcaXk5TdJRrDUxHXL78A==}
 
   '@octokit/auth-token@2.5.0':
     resolution: {integrity: sha512-r5FVUJCOLl19AxiuZD2VRZ/ORjp/4IN98Of6YJoJOkY75CIBuYfmiNHGrDwXr+aLGG55igl9QrxX3hbiXlLb+g==}
@@ -1506,6 +1515,9 @@ packages:
     resolution: {integrity: sha512-eflK8wEtyOE6+hsaRVPxvUKYCpRgzLqDTb8krvAsRIwOGlHoSgYLgBXoubGgLd2fT41/OUYdb48v4k4WWHQurA==}
     engines: {node: '>= 10.13.0'}
 
+  secret-manager-crypto-utils@0.3.1:
+    resolution: {integrity: sha512-w4usWFH1r4ucR8dZBk81kmBo3ZOouU6a+/fZEaOFaP22icFapbelf1f5M1QwcbZ0AwPDeWfwvq8DfNOr0PAQyg==}
+
   semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
     hasBin: true
@@ -1711,12 +1723,18 @@ packages:
     resolution: {integrity: sha512-jth7wTJ3i3px8uh93haM13deSwkZoiWYymHyUsTceOIiYAk53nbywUqo6wTiLaya5qid17w6KDte4xLpxL9SsA==}
     hasBin: true
 
+  thingy-byte-utils@0.0.8:
+    resolution: {integrity: sha512-m9+aSv0XrU1g6Da61Qq0ZnyflSYx1/uWfD98UFziOV4WMrEzE5eHTjXGhxhFRzauL3EkwujZZJbOBxj8PzHyAg==}
+
   thingy-debug@0.0.1:
     resolution: {integrity: sha512-PBIOqHt1KXDsMENJip89IwzZhc8vhv88rp7aw89O+hfSQA5QMqOxAjaILGmPK2H+yeePyTuTBWqTfHCWW6vNDQ==}
 
   thingy-module-gen@0.1.6:
     resolution: {integrity: sha512-/YvGbX5H9uBmQTnlMF4i5UyWu46scAhUF9XTNzlhvIRrEsDCVyhS1afNlC2+qlQ7jgNeWNl2boexDK6e9vGHDA==}
     hasBin: true
+
+  thingy-schema-validate@0.0.7:
+    resolution: {integrity: sha512-XbmlKspRhcjMfywCbWs4OWvcivCsMunsGNjReJ6W1CDi9AQmW9OA4U2cT2d/mtBzxOnILuHEBGmuIpN87idfQA==}
 
   thingymodulecreate@0.1.8:
     resolution: {integrity: sha512-NJOJbhAYYCqBg3eyC5HkrfOnndGUFaLD278lKnpB6EcaY+zIyMNYL/q1/EYofhe4JB848G3WgX2Xb+zWd67aRg==}
@@ -1991,6 +2009,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@noble/ed25519@2.3.0': {}
 
   '@octokit/auth-token@2.5.0':
     dependencies:
@@ -3634,6 +3654,11 @@ snapshots:
       ajv-formats: 2.1.1(ajv@8.17.1)
       ajv-keywords: 5.1.0(ajv@8.17.1)
 
+  secret-manager-crypto-utils@0.3.1:
+    dependencies:
+      '@noble/ed25519': 2.3.0
+      thingy-byte-utils: 0.0.8
+
   semver@5.7.2: {}
 
   semver@7.7.3: {}
@@ -3861,6 +3886,8 @@ snapshots:
       meow: 10.1.5
       mustache: 4.2.0
 
+  thingy-byte-utils@0.0.8: {}
+
   thingy-debug@0.0.1: {}
 
   thingy-module-gen@0.1.6(@types/node@24.10.1):
@@ -3871,6 +3898,8 @@ snapshots:
       mustache: 4.2.0
     transitivePeerDependencies:
       - '@types/node'
+
+  thingy-schema-validate@0.0.7: {}
 
   thingymodulecreate@0.1.8:
     dependencies:
