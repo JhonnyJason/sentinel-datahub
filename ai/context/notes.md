@@ -13,6 +13,7 @@
 - `sources/source/startupmodule/startupmodule.coffee` - Startup orchestration
 - `sources/source/datamodule/datamodule.coffee` - Central data layer (freshness, storage)
 - `sources/source/marketstackmodule/marketstackmodule.coffee` - MarketStack API client
+- `sources/source/dateutilsmodule/dateutilsmodule.coffee` - Shared date utilities
 - `sources/source/tradovatemodule/tradovatemodule.coffee` - Tradovate API client (disabled)
 
 ### Module Registry
@@ -41,7 +42,8 @@ However I should tell my partner and let him do this.
 All date arithmetic MUST use UTC midnight: `new Date(dateStr + "T00:00:00Z")`
 - Ensures consistent day boundaries across the codebase
 - Using `new Date(dateStr)` alone interprets as local time → off-by-one errors
-- Applied in: marketstackmodule (generateDateRange), datamodule (isFresh, nextDay, prevDay, daysBetween)
+- **Centralized in `dateutilsmodule`**: `nextDay`, `prevDay`, `daysBetween`, `generateDateRange`
+- Both marketstackmodule and datamodule import from dateutilsmodule
 
 ## Current Quirks
 
@@ -83,31 +85,30 @@ Storage: { "<symbol>": DataSet, ... }
 
 **See:** `sources/source/marketstackmodule/README.md` for full architecture and API reference
 
-### MarketStack Module Architecture (Planned)
+### MarketStack Module Architecture
 
 **Two retrieval models:**
-- **Stocks: Pull model** — DataModule calls on-demand, fast
-- **Commodities: Push model** — Heartbeat fetches continuously (1 req/min limit), notifies DataModule
+- **Stocks: Pull model** — DataModule calls on-demand, fast (IMPLEMENTED)
+- **Commodities: Push model** — Heartbeat fetches continuously (1 req/min limit), notifies DataModule (TODO)
 
-**Stock exports:**
+**Stock exports (implemented):**
 ```
-getStockAllHistory(ticker) → Result
-getStockOlderHistory(ticker, olderThan) → Result
-getStockNewerHistory(ticker, newerThan) → Result
+getStockAllHistory(ticker) → DataSet | null
+getStockOlderHistory(ticker, olderThan) → DataSet | null
+getStockNewerHistory(ticker, newerThan) → DataSet | null
 
-Result: { dataSet, reachedHistoryStart, reachedPlanLimit }
+DataSet: { meta: { startDate, endDate, interval, historyComplete }, data: [[h,l,c], ...] }
 ```
 
-**Commodity exports:**
+**Commodity exports (TODO):**
 ```
 startCommodityHeartbeat(config)  # config: { commodities[], onData, onComplete }
 stopCommodityHeartbeat()
 ```
 
 **Implementation tasks:**
-- [ ] Stock functions: pagination, normalize, gap-fill, detect limits
+- [x] Stock functions: pagination, normalize, gap-fill, detect limits
 - [ ] Commodity heartbeat: init, state management, round-robin, callbacks
-- [ ] Shared: normalizeStockResponse, normalizeCommodityResponse, gapFill
 
 ### Priority 2: DataModule Implementation (In Progress)
 
@@ -127,11 +128,11 @@ Client Request → API Endpoint → DataModule → Response
 - Missing → full fetch with `getStockAllHistory()`
 
 **Implementation tasks:**
-- [ ] `initialize(config)` - setup storage, configure threshold
-- [ ] `getStockData(symbol)` - freshness check, fetch if needed, return
-- [ ] `getCommodityData(name)` - return stored data (no fetch)
-- [ ] Storage integration with `cached-persistentstate`
-- [ ] Freshness threshold configuration
+- [x] `initialize(config)` - setup storage, configure threshold
+- [x] `getStockData(symbol)` - freshness check, fetch if needed, return
+- [x] `getCommodityData(name)` - return stored data (no fetch)
+- [x] Storage integration
+- [x] Freshness threshold configuration
 
 **See:** `sources/source/datamodule/README.md`
 

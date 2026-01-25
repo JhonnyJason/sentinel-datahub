@@ -2,8 +2,8 @@
 
 ## Checklist
 
-- [ ] 1. Data Retrieval EOD (Stocks/Tickers)
-- [ ] 2. General Data Storage
+- [x] 1. Data Retrieval EOD (Stocks/Tickers)
+- [x] 2. General Data Storage
 - [ ] 3. Retrieve newer/older Data (incremental updates)
 - [ ] 4. Data Retrieval Commodities
 - [ ] 5. Data Retrieval Currencies

@@ -1,7 +1,7 @@
 # Status
 Phase: Planning
 Version: v0.1.0
-TaskNr: 1
+TaskNr: 2
 
 ## Current Implementation State
 The service had been created in my coffeescript build-system.

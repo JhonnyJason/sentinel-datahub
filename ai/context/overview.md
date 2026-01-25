@@ -18,6 +18,7 @@ configmodule/       - Configuration loader (.config.json)
 startupmodule/      - Service startup orchestration
 datamodule/         - Central data layer: freshness management, storage
 marketstackmodule/  - MarketStack API integration (stock market data)
+dateutilsmodule/    - Shared date utilities (nextDay, prevDay, daysBetween, generateDateRange)
 tradovatemodule/    - Tradovate API integration (futures trading)
 bugsnitch/          - Error reporting (Unix socket to bugsnitch service)
 scimodule/          - (minimal - purpose unclear)
@@ -117,6 +118,7 @@ Storage: { "<symbol>": DataSet, ... }
 - All date arithmetic uses UTC midnight: `new Date(dateStr + "T00:00:00Z")`
 - This ensures consistent day boundaries regardless of local timezone
 - IMPORTANT: Never use `new Date(dateStr)` alone — it interprets as local time and causes off-by-one errors
+- Use shared utilities from `dateutilsmodule`: `nextDay`, `prevDay`, `daysBetween`, `generateDateRange`
 
 **Symbol convention:** `{asset}/{quote_currency}` (lowercase quote currency)
 
