@@ -8,5 +8,5 @@ The MarketStack API seems the best way to go as they are affordable and their AP
 ## Sub-Tasks
 - [x] Summarize the marketstack API
 - [x] Implement a convenience Wrapper in the marketstackmodule
-- [ ] Implement top-level control function in the datamodule
+- [x] Implement top-level control function in the datamodule
 - [ ] Test and fix

@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      cached-persistentstate:
-        specifier: ^0.0.1
-        version: 0.0.1
       coffeescript:
         specifier: ^2.7.0
         version: 2.7.0
@@ -352,9 +349,6 @@ packages:
 
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
-
-  cached-persistentstate@0.0.1:
-    resolution: {integrity: sha512-kfbGluUgUQmEAPOuPvmnZ+lMm1OZv0pN6BHzePk/oeXlKhI0JHbc/2cHOyjLDON0UXxPzKigpvMW7S+AHjhlnQ==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -2321,8 +2315,6 @@ snapshots:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-
-  cached-persistentstate@0.0.1: {}
 
   call-bind-apply-helpers@1.0.2:
     dependencies:

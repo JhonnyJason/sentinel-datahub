@@ -113,6 +113,11 @@ Storage: { "<symbol>": DataSet, ... }
 - Date computed from index: `date = startDate + (index * interval)`
 - Contiguous data guaranteed (no gaps)
 
+**Date handling convention:**
+- All date arithmetic uses UTC midnight: `new Date(dateStr + "T00:00:00Z")`
+- This ensures consistent day boundaries regardless of local timezone
+- IMPORTANT: Never use `new Date(dateStr)` alone — it interprets as local time and causes off-by-one errors
+
 **Symbol convention:** `{asset}/{quote_currency}` (lowercase quote currency)
 
 ### Gap-Fill Rule

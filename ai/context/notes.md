@@ -19,9 +19,9 @@
 - `sources/source/allmodules/allmodules.coffee` - Exports all modules
 
 ### Storage Layer
-- `sources/source/storagemodule/storagemodule.coffee` - Public API (TODO: wire up)
-- `sources/source/statecachemodule/statecachemodule.coffee` - LRU cache layer
-- `sources/source/statesavermodule/statesavermodule.coffee` - File I/O with backup
+- `sources/source/storagemodule/storagemodule.coffee` - Public API
+- `sources/source/storagemodule/statecache.coffee` - LRU cache layer (internal)
+- `sources/source/storagemodule/statesaver.coffee` - File I/O with backup (internal)
 
 ## Quick Reference
 ### Add a new module
@@ -35,6 +35,14 @@ However I should tell my partner and let him do this.
 - `checkAccessMS`, `checkSymbolsMS` - Polling intervals
 - `persistentStateOptions` - State storage config
 
+## Critical Conventions
+
+### Date Handling
+All date arithmetic MUST use UTC midnight: `new Date(dateStr + "T00:00:00Z")`
+- Ensures consistent day boundaries across the codebase
+- Using `new Date(dateStr)` alone interprets as local time → off-by-one errors
+- Applied in: marketstackmodule (generateDateRange), datamodule (isFresh, nextDay, prevDay, daysBetween)
+
 ## Current Quirks
 
 1. **Tradovate disabled**: In `tradovatemodule.coffee:31` there's an early `return` that skips initialization
@@ -45,26 +53,16 @@ However I should tell my partner and let him do this.
 
 4. **No HTTP server**: The service currently has no way to receive requests
 
-5. **Storage layer not wired up**: statecachemodule/statesavermodule exist but aren't integrated into standard init pattern
+5. **Storage layer ready**: storagemodule wired up and integrated into standard init pattern
 
 ## Storage Layer Status
 
 **Architecture:**
 ```
-storagemodule (public API) → statecachemodule (LRU cache) → statesavermodule (file I/O)
+storagemodule (public API) → statecache (LRU cache) → statesaver (file I/O)
 ```
 
-**Issues to fix:**
-- [ ] statecachemodule:4 - log label says "statesavermodule" (typo)
-- [ ] statecachemodule - missing `toJson` helper function (will crash)
-- [ ] storagemodule - empty, needs to wire up statecachemodule
-- [ ] Need `list()` function to enumerate stored states
-
-**Initialization mismatch:**
-- statecachemodule.initialize(options) expects `{basePath, maxCacheSize, defaultState}`
-- Standard pattern passes `cfg` module
-- configmodule already has `persistentStateOptions` (lines 50-53)
-- storagemodule should bridge: `statecache.initialize(cfg.persistentStateOptions)`
+All components now live in `sources/source/storagemodule/`. Wired up and ready to use.
 
 ## Next Implementation Focus
 
