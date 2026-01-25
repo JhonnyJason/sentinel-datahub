@@ -11,6 +11,7 @@
 
 ### Business Logic
 - `sources/source/startupmodule/startupmodule.coffee` - Startup orchestration
+- `sources/source/datamodule/datamodule.coffee` - Central data layer (freshness, storage)
 - `sources/source/marketstackmodule/marketstackmodule.coffee` - MarketStack API client
 - `sources/source/tradovatemodule/tradovatemodule.coffee` - Tradovate API client (disabled)
 
@@ -84,10 +85,31 @@ stopCommodityHeartbeat()
 - [ ] Commodity heartbeat: init, state management, round-robin, callbacks
 - [ ] Shared: normalizeStockResponse, normalizeCommodityResponse, gapFill
 
-### Priority 2: Data Management
-- How do we store, cache, and serve retrieved data?
-- Data freshness and invalidation strategies
-- Persistent storage vs in-memory caching
+### Priority 2: DataModule Implementation (In Progress)
+
+**Architecture decided:**
+```
+Client Request → API Endpoint → DataModule → Response
+                                    │
+                                    ├─ Fresh? → return cached
+                                    └─ Stale/missing? → fetch → return
+```
+
+**Key decisions:**
+- Stocks: Pull model (active freshness management)
+- Commodities: Push model (passive, return what heartbeat gathered)
+- Freshness threshold: Configurable, default 7 days
+- Stale → top-up with `getStockNewerHistory()`
+- Missing → full fetch with `getStockAllHistory()`
+
+**Implementation tasks:**
+- [ ] `initialize(config)` - setup storage, configure threshold
+- [ ] `getStockData(symbol)` - freshness check, fetch if needed, return
+- [ ] `getCommodityData(name)` - return stored data (no fetch)
+- [ ] Storage integration with `cached-persistentstate`
+- [ ] Freshness threshold configuration
+
+**See:** `sources/source/datamodule/README.md`
 
 ### Later: Client-Facing API
 - HTTP/HTTPS server module

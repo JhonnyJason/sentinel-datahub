@@ -16,8 +16,9 @@ A data aggregation service that acts as an intermediary between the **Sentinel D
 index/              - Entry point: initializes modules, runs startup
 configmodule/       - Configuration loader (.config.json)
 startupmodule/      - Service startup orchestration
-tradovatemodule/    - Tradovate API integration (futures trading)
+datamodule/         - Central data layer: freshness management, storage
 marketstackmodule/  - MarketStack API integration (stock market data)
+tradovatemodule/    - Tradovate API integration (futures trading)
 bugsnitch/          - Error reporting (Unix socket to bugsnitch service)
 scimodule/          - (minimal - purpose unclear)
 debugmodule/        - Debug utilities setup
@@ -66,6 +67,31 @@ The service is an **experimental shell** for API exploration:
 4. Token-Based Access Control
 
 ## Data Layer Design Decisions
+
+### DataModule Architecture
+
+Central data layer serving API endpoints. Manages freshness and coordinates with external APIs.
+
+**Data Flow:**
+```
+Client Request → API Endpoint → DataModule → Response
+                                    │
+                                    ├─ Fresh? → return cached
+                                    └─ Stale/missing? → fetch → store → return
+```
+
+**Freshness Strategy by Asset Type:**
+
+| Asset | Model | Behavior |
+|-------|-------|----------|
+| Stocks | Pull (active) | Check freshness → top-up if stale → return |
+| Commodities | Push (passive) | Return whatever heartbeat has gathered |
+
+**Freshness threshold:** Configurable (default 7 days). For EOD data, defines max acceptable gap between last data point and today. Pattern analysis tolerates larger gaps.
+
+**Fetch logic:**
+- Stale data → `getStockNewerHistory()` to top-up missing range
+- No data → `getStockAllHistory()` to fetch everything
 
 ### Uniform Data Format
 All historical price data is normalized to an efficient array-based structure:
