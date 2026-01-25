@@ -41,6 +41,9 @@ importers:
       thingysync:
         specifier: ^0.1.2
         version: 0.1.2
+      validatabletimestamp:
+        specifier: ^0.0.5
+        version: 0.0.5
       webpack:
         specifier: ^5.104.1
         version: 5.104.1(webpack-cli@6.0.1)
@@ -1858,6 +1861,9 @@ packages:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
     hasBin: true
+
+  validatabletimestamp@0.0.5:
+    resolution: {integrity: sha512-enS+8RfHIG3DKMSIgM/ajWdyIIziwlQMcy4ABEPHJNXzNAA35WuUehj4OYR3jpMplxIldESrG1+TfD124oy7ZA==}
 
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
@@ -4040,6 +4046,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   uuid@3.4.0: {}
+
+  validatabletimestamp@0.0.5: {}
 
   validate-npm-package-license@3.0.4:
     dependencies:

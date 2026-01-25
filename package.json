@@ -46,7 +46,7 @@
         "url": "git+https://github.com/JhonnyJason/sentinel-datahub.git"
     },
     "author": "Lenard Frommelt",
-    "license": "Unlicense",
+    "license": "CC0-1.0",
     "bugs": {
         "url": "https://github.com/JhonnyJason/sentinel-datahub/issues"
     },
@@ -63,6 +63,7 @@
         "thingy-schema-validate": "^0.0.7",
         "thingymodulecreate": "^0.1.8",
         "thingysync": "^0.1.2",
+        "validatabletimestamp": "^0.0.5",
         "webpack": "^5.104.1",
         "webpack-cli": "^6.0.1"
     },
