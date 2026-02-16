@@ -57,8 +57,14 @@ However I should tell my partner and let him do this.
 All date arithmetic MUST use UTC midnight: `new Date(dateStr + "T00:00:00Z")`
 - Ensures consistent day boundaries across the codebase
 - Using `new Date(dateStr)` alone interprets as local time → off-by-one errors
-- **Centralized in `dateutilsmodule`**: `nextDay`, `prevDay`, `daysBetween`, `generateDateRange`
+- **Centralized in `dateutilsmodule`**: `nextDay`, `prevDay`, `daysBetween`, `generateDateRange`, `isTradingDay`, `lastTradingDay`, `isTradingHour`, `isPreTradingHour`
 - Both marketstackmodule and datamodule import from dateutilsmodule
+
+### Trading Day Awareness
+- `isTradingDay(date?)` — weekends only for now, **holidays not yet handled**
+- `lastTradingDay(date?)` — walks back past weekends to find last weekday
+- Known limitation: public holidays will still trigger unnecessary API calls (capped by pre-trade attempt limiter)
+- Gap-fill only works between data points, NOT at the trailing edge — we cannot blindly fill forward because we can't distinguish "holiday" from "data not yet available"
 
 ## Current Quirks
 
@@ -90,6 +96,14 @@ All components now live in `sources/source/storagemodule/`. Wired up and ready t
 - [x] DataModule: freshness check, top-up, storage integration
 - [x] Storage layer: LRU cache + file persistence
 
+**Live Data Heartbeat:**
+- [x] Intraday price fetching during trading hours (marketstackmodule)
+- [x] Pre-trading data top-up via `forceLoadNewestStockData`
+- [x] Live feed with WebSocket subscriber notification (livefeedmodule)
+- [x] Weekend skip (`isTradingDay` check)
+- [x] Trading-day-aware freshness: compares against `lastTradingDay(yesterday)` instead of calendar yesterday
+- [x] Pre-trade attempt limiter (max 3/day) — backstop for unknown holidays
+
 **Client API:**
 - [x] HTTP server via scicore framework
 - [x] Admin endpoints: `grantAccess`, `revokeAccess` (signature-authenticated)
@@ -104,15 +118,24 @@ All components now live in `sources/source/storagemodule/`. Wired up and ready t
 - [ ] Deployment configuration
 
 **Future:**
+- [ ] Holiday calendar support for `isTradingDay` (currently weekends only)
 - [ ] Commodity heartbeat (push model, 1 req/min)
 - [ ] Forex data integration
 - [ ] Preprocessed data endpoints
+
+## Split Factor Handling
+- `normalizeEodResponse(apiData, ticker, startFactor=1.0)` extracts split events from API data
+- `splitFactors` array stored in `meta`: `[{f: cumFactor, end: "date"}, ..., {f: currentFactor}]`
+- On append (top-up): `getCumulativeFactor(dataSet)` provides the starting factor for normalization
+- `mergeSplitFactors(existing, newer)` = `[...existing.slice(0,-1), ...newer]`
+- `recorrectData(symbol)` re-fetches everything — the fix for legacy/incorrect data
+- Legacy data without `meta.splitFactors` needs recorrection
 
 ## Key Architecture References
 
 **Data Format:**
 ```
-DataSet: { meta: { startDate, endDate, interval, historyComplete }, data: [[h,l,c], ...] }
+DataSet: { meta: { startDate, endDate, interval, historyComplete, splitFactors }, data: [[h,l,c], ...] }
 ```
 
 **API Flow:**
@@ -124,6 +147,13 @@ Client Request → scimodule → authCheck → datamodule → response
 ```
 
 **See:** `sources/source/marketstackmodule/README.md`, `sources/source/datamodule/README.md`
+
+## Request Queue Design
+The throttled request queue in `marketstackmodule.coffee` has two mechanisms:
+1. **Rate limiting**: Burst of 5 requests, then wait if burst < 1s (stays below 5 req/s)
+2. **URL deduplication**: Identical URLs are coalesced — fetched once, parsed once, result shared with all waiters. Uses a `pending` Map (url → [{resolve, reject}]). The map entry is deleted *before* calling resolve/reject to avoid stale entries if a resolver re-enqueues the same URL.
+
+The queue returns parsed JSON (not raw Response), so callers receive body objects directly.
 
 ## MarketStack API Quick Reference
 
