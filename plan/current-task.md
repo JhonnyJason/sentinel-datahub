@@ -29,5 +29,5 @@ Ultimatively we need to:
 - [x] Update getStockData / forceLoadNewestStockData to pass cumulative factor
 - [x] Preserve splitFactors in sliceByYears
 - [x] Add recorrectData export
-- [ ] Build, test with a stock that has known splits (e.g. AAPL)
-- [ ] Investigate the Apple anomaly (strong day-on-day increases at 2-4 dates)
+- [x] Build, test with a stock that has known splits (e.g. AAPL)
+- [x] Investigate the Apple anomaly (strong day-on-day increases at 2-4 dates)

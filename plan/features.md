@@ -4,5 +4,5 @@
 
 - [x] Add live-data feed from HYG
 - [x] Add Websocket Connection + liveFeed subscription logic
-- [ ] Add split-factors into cached DataSet
-- [ ] Investigate Issue of apple Data
+- [x] Add split-factors into cached DataSet
+- [x] Investigate Issue of apple Data
