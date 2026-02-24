@@ -90,8 +90,8 @@ All components now live in `sources/source/storagemodule/`. Wired up and ready t
 ### Completed ✓
 
 **Data Layer:**
-- [x] Uniform data format: `DataPoint: [high, low, close]`, `DataSet: { meta, data }`
-- [x] Gap-fill rule: Missing days → `[lastClose, lastClose, lastClose]`
+- [x] Uniform data format: `DataPoint: [high, low, close]` (trading day), `GapFillPoint: [lastClose]` (non-trading day)
+- [x] Gap-fill rule: Missing days → `[lastClose]` (single element, distinguishable by length)
 - [x] Stock retrieval: pagination, normalize, gap-fill, history completeness detection
 - [x] DataModule: freshness check, top-up, storage integration
 - [x] Storage layer: LRU cache + file persistence
@@ -128,14 +128,19 @@ All components now live in `sources/source/storagemodule/`. Wired up and ready t
 - `splitFactors` array stored in `meta`: `[{f: cumFactor, end: "date"}, ..., {f: currentFactor}]`
 - On append (top-up): `getCumulativeFactor(dataSet)` provides the starting factor for normalization
 - `mergeSplitFactors(existing, newer)` = `[...existing.slice(0,-1), ...newer]`
-- `recorrectData(symbol)` re-fetches everything — the fix for legacy/incorrect data
-- Legacy data without `meta.splitFactors` needs recorrection
+- `recorrectData(symbol)` re-fetches everything — the fix for legacy/outdated data
+
+### Data Structure Versioning
+- `dataStructureVersion` exported from marketstackmodule (producer stamps version)
+- Stored in `meta.version` of every DataSet
+- datamodule checks on load: `unless meta.version >= dataStructureVersion` → recorrect
+- Handles undefined/legacy gracefully (NaN >= N is false → triggers recorrection)
 
 ## Key Architecture References
 
 **Data Format:**
 ```
-DataSet: { meta: { startDate, endDate, interval, historyComplete, splitFactors }, data: [[h,l,c], ...] }
+DataSet: { meta: { startDate, endDate, interval, historyComplete, splitFactors, version }, data: [[h,l,c]|[lastClose], ...] }
 ```
 
 **API Flow:**

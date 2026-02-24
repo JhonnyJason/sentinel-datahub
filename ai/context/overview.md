@@ -115,11 +115,12 @@ Client Request → API Endpoint → DataModule → Response
 All historical price data is normalized to an efficient array-based structure:
 
 ```
-DataPoint: [high, low, close]  // array of 3 floats
+DataPoint: [high, low, close]  // array of 3 floats (trading day)
+GapFillPoint: [lastClose]      // array of 1 float (non-trading day)
 
 DataSet: {
-  meta: { startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", interval: "1d" },
-  data: [DataPoint, DataPoint, ...]  // index 0 = startDate
+  meta: { startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", interval: "1d", version: N },
+  data: [DataPoint|GapFillPoint, ...]  // index 0 = startDate
 }
 
 Storage: { "<symbol>": DataSet, ... }
@@ -130,6 +131,7 @@ Storage: { "<symbol>": DataSet, ... }
 - Symbol stored once per DataSet, not per DataPoint
 - Date computed from index: `date = startDate + (index * interval)`
 - Contiguous data guaranteed (no gaps)
+- Non-trading days distinguishable by `dp.length === 1` (identifies holidays, not just weekends)
 
 **Date handling convention:**
 - All date arithmetic uses UTC midnight: `new Date(dateStr + "T00:00:00Z")`
@@ -140,9 +142,10 @@ Storage: { "<symbol>": DataSet, ... }
 **Symbol convention:** `{asset}/{quote_currency}` (lowercase quote currency)
 
 ### Gap-Fill Rule
-If source data has missing days, fill with: `[lastClose, lastClose, lastClose]`
+If source data has missing days, fill with: `[lastClose]` (single element)
 
 This ensures every index has a valid DataPoint, simplifying consumer code.
+Non-trading days are distinguishable from trading days by array length: `dp.length === 1` vs `dp.length === 3`.
 
 ### Data Sources
 
