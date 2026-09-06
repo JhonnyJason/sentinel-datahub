@@ -2,25 +2,34 @@
 
 ############################################################
 #region removeStuff
-systemctl stop tested.socket
-systemctl stop tested.service
-systemctl stop tested.path
-rm /run/tested.sk
+systemctl stop sentinel-datahub.socket
+systemctl stop sentinel-datahub.service
+systemctl stop sentinel-datahub.path
+
+rm /run/sentinel-datahub.sk
+
 #endregion
 
 ############################################################
 #region copyStuff
-cp tested.service /etc/systemd/system/
-cp tested.socket /etc/systemd/system/
-cp tested.path /etc/systemd/system/
-cp restart-tested.service /etc/systemd/system/
-cp nginx-config /etc/nginx/servers/tested
+cp sentinel-datahub.service /etc/systemd/system/
+cp sentinel-datahub.socket /etc/systemd/system/
+cp sentinel-datahub.path /etc/systemd/system/
+cp restart-sentinel-datahub.service /etc/systemd/system/
+
+cp nginx-config /etc/nginx/servers/sentinel-datahub
+
 #endregion
+
+############################################################
+./mount-files.sh
 
 ############################################################
 #region reloadAnd(Re)start
 systemctl daemon-reload
-systemctl start tested.socket
-systemctl start tested.path
+systemctl start sentinel-datahub.socket
+systemctl start sentinel-datahub.path
+
 nginx -s reload
+
 #endregion

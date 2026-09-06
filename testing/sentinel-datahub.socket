@@ -1,5 +1,5 @@
 [Socket]
-ListenStream=/run/tested.sk
+ListenStream=/run/sentinel-datahub.sk
 
 [Install]
 WantedBy=sockets.target

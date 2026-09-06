@@ -1,5 +1,5 @@
 server{
-    listen  6999  ssl;
+    listen  6113  ssl;
     server_name localhost;
 
     ssl_certificate  ssl/cert.pem;
@@ -34,6 +34,7 @@ server{
     location / {
         limit_except POST GET { deny all; }
 
+
 ########## Upgrade connection for websockets
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -43,6 +44,6 @@ server{
         proxy_read_timeout 2h;
         proxy_send_timeout 2h;
 
-       proxy_pass http://unix:/run/tested.sk;
+        proxy_pass http://unix:/run/sentinel-datahub.sk;
     }
 }
