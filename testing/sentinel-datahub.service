@@ -11,6 +11,7 @@ Group=services
 ExecStart=/usr/bin/node /opt/void/sentinel-datahub/service.js
 WorkingDirectory=/srv/srvcs/sentinel-datahub/
 
+Environment="NODE_EXTRA_CA_CERTS=/opt/void/mkcert/rootCA.pem"
 Environment=SOCKETMODE=true
 Restart=no
 
